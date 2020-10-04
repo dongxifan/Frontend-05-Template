@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<style>
+	.board{		
+		width: 300px;
+		padding: 0;
+
+	}
+	.item{
+	    box-sizing: border-box;
+	    float: left;
+	    width: 100px;
+	    height: 100px;
+	    line-height: 100px;
+	    border: 1px solid yellow;
+	    border-color: yellow;
+	    background: #666666;
+	    text-align: center;
+	    font-size: 38px;
+	    cursor: pointer;
+	    user-select: none;
+
+	}
+</style>
+<body>
+	<div class="board" id='board'></div>
+	<script type="text/javascript">
+			let arr = [
+				[0,0,0],
+				[0,0,0],
+				[0,0,0]
+			];
+			let nowColor = 1;
+			let ARole = '😐';
+			let BRole = '😂';
+			let isOver = false;
+
+			function show(){
+				let board = document.getElementById('board');
+				initBoard();
+				for(let i=0; i<arr.length; i++){
+					for(let j=0; j<arr[i].length; j++){
+						let item = document.createElement('div');
+						item.classList.add('item');
+						item.innerText = 
+							arr[i][j] === 1 ? ARole : 
+							arr[i][j] === 2 ? BRole : '';
+						item.addEventListener('click',() => move(item,i,j));
+						board.appendChild(item)
+					}
+
+				}
+			};
+
+			function initBoard(){
+				board.innerHTML = '';
+				arr = [
+					[0,0,0],
+					[0,0,0],
+					[0,0,0]
+				];
+				nowColor = 1;
+				isOver = false;
+			};
+
+			function move(item,i,j){
+				if(arr[j][i] === 0){ 	
+					item.innerText = nowColor === 1 ? ARole : BRole;
+					arr[j][i] = nowColor;
+					if(checkWin(arr,nowColor)){
+						isOver = true;
+						alert(nowColor === 1 ? 'A is winner, 游戏结束！' : 'B is winner, 游戏结束！');
+						show();
+						return;
+					}
+					if(checkPeace()){
+						alert('平局！');
+						show();
+						return;
+					}
+					nowColor = nowColor === 1 ? 2 : 1;
+
+					if(checkWillWin(arr,nowColor)){	
+						console.log(nowColor === 1 ? 'A 要赢了' : 'B 要赢了');
+					}
+				}
+			};
+			function checkWillWin(tempArr,color){
+				for(let i=0; i<tempArr.length; i++){
+					for(let j=0; j<tempArr[i].length; j++){
+						if(tempArr[i][j])
+							continue;
+						let temp = JSON.parse(JSON.stringify(tempArr));
+						temp[i][j] = color;
+						if(checkWin(temp,color)){
+							return [j,i];
+						}
+					}
+				}
+				return null;
+			};
+
+			//最好选择
+			function bestChoice(tempArr,color){
+				let p;
+				if(p = checkWillWin(tempArr,color)){
+					return {
+						point: p,
+						result: 1
+					}
+				}
+				let result = -2;
+				let point = null;
+				for(let i=0; i<3; i++){
+					for(let j=0; j<3; j++){
+						if(tempArr[i][j])
+							continue;
+						let temp = JSON.parse(JSON.stringify(tempArr));
+						temp[i][j] = color;
+						let r = bestChoice(temp, color === 1 ? 2 : 1).result;
+						if(-r > result){
+							result = -r;
+							point = [j,i];
+						}
+					}
+				}
+				return{
+					point: point,
+					result: point ? result : 0
+				}
+
+			};
+			function checkPeace(){
+				let isPeace = true;
+				ab: for(let i=0; i<arr.length; i++){
+						for(let j=0; j<arr[i].length; j++){
+							if(arr[i][j] === 0){
+								isPeace = false;
+								break ab;
+							}
+						}
+					}
+				return isPeace;
+			};
+
+			function checkWin(tempArr,color){
+				for(let i=0; i<3; i++){
+					let win = true;
+					for(let j=0; j<3; j++){
+						if(color !==  tempArr[i][j] ){
+							win = false;
+						}
+					}
+					if(win)
+						return true;
+				}
+				for(let i=0; i<3; i++){
+					let win = true;
+					for(let j=0; j<3; j++){
+						if(color !==  tempArr[j][i] ){
+							win = false;
+						}
+					}
+					if(win)
+						return true;
+				}
+
+				{
+					let win = true;
+					for(let i=0; i<3; i++){
+						if(color !==  tempArr[i][i] ){
+								win = false;
+						}
+					}
+					if(win)
+							return true;
+				}
+				{
+					let win = true;
+					for(let i=0; i<3; i++){
+						if(color !==  tempArr[i][2-i] ){
+								win = false;
+						}
+					}
+					if(win)
+							return true;
+				}
+
+
+				return false;
+			}
+
+		show();
+		bestChoice(arr,nowColor);
+	</script>
+</body>
+</html>
+
