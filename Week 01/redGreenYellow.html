@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<style>
+	.lamp{
+		float:left;
+		margin-right: 20px;
+		width: 100px;
+		height: 100px;
+		border-radius: 100px;
+		background: grey;
+	}
+	.red.light{
+		background: red;
+	}
+	.green.light{
+		background: green;
+	}
+	.yellow.light{
+		background: yellow;
+	}
+	.btn{
+		width:50px;
+		height:30px;
+		text-align: center;
+	}
+</style>
+<body>
+<div class="lamp green"></div>
+<div class="lamp yellow"></div>
+<div class="lamp red"></div>
+<button class="btn">下一个</button>
+
+
+
+<script>
+	let timeout = function(){
+		changeColor('green')
+		setTimeout(function(){
+			changeColor('yellow')
+			setTimeout(function(){ 
+				changeColor('red')
+				setTimeout(function(){ 				
+					timeout();
+				}, 5000)
+			}, 3000)
+		}, 1000)
+	}
+
+	function changeColor(className){
+		let lights = document.getElementsByClassName('lamp');
+		for(let i=0; i<lights.length; i++){
+			lights[i].classList.remove('light')
+		}		
+		document.getElementsByClassName(className)[0].classList.add('light');
+	}
+
+	// timeout();
+
+
+
+	function sleep(t){
+		return new Promise((resolve , reject) => {
+			setTimeout(() => resolve() , t);
+		})
+	}
+
+	function go(){
+		changeColor('green')
+		sleep(1000).then( () => {
+			changeColor('yellow');
+			return sleep(200);
+		}).then( () => {
+			changeColor('red');
+			return sleep(500);
+		}).then( () => {
+			go();
+		})
+	}
+
+
+//
+	async function go2(){
+		while(true){
+			changeColor('green');
+			await sleep(1000);
+			changeColor('yellow');
+			await sleep(2000);
+			changeColor('red');
+			await sleep(1000)
+		}
+	}
+
+
+
+//点击事件触发异步
+	function happen(dom,eventName){
+			return new Promise((resolve , reject) => {
+				dom.addEventListener(eventName , resolve , {once: true})
+			})
+		}
+
+	async function go3(){
+			while(true){
+				changeColor('green');
+				await happen(document.getElementsByClassName('btn')[0] , 'click');
+				changeColor('yellow');
+				await happen(document.getElementsByClassName('btn')[0] , 'click');
+				changeColor('red');
+				await happen(document.getElementsByClassName('btn')[0] , 'click');
+			}
+		}
+
+</script>
+</body>
+</html>

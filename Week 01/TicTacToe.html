@@ -40,7 +40,8 @@
 
 			function show(){
 				let board = document.getElementById('board');
-				initBoard();
+				board.innerHTML = '';
+
 				for(let i=0; i<arr.length; i++){
 					for(let j=0; j<arr[i].length; j++){
 						let item = document.createElement('div');
@@ -48,44 +49,49 @@
 						item.innerText = 
 							arr[i][j] === 1 ? ARole : 
 							arr[i][j] === 2 ? BRole : '';
-						item.addEventListener('click',() => move(item,i,j));
+						item.addEventListener('click',() => userMove(item,i,j));
 						board.appendChild(item)
 					}
 
 				}
 			};
+			
 
-			function initBoard(){
-				board.innerHTML = '';
-				arr = [
-					[0,0,0],
-					[0,0,0],
-					[0,0,0]
-				];
-				nowColor = 1;
-				isOver = false;
-			};
+		
+			function computerMove(){
 
-			function move(item,i,j){
-				if(arr[j][i] === 0){ 	
-					item.innerText = nowColor === 1 ? ARole : BRole;
-					arr[j][i] = nowColor;
+				let bestPoint = bestChoice(arr,nowColor);
+					if(bestPoint.point){
+						arr[bestPoint.point[0]][bestPoint.point[1]] = nowColor;
+						nowColor = nowColor === 1 ? 2 : 1;	
+						show();
+					}
 					if(checkWin(arr,nowColor)){
 						isOver = true;
 						alert(nowColor === 1 ? 'A is winner, 游戏结束！' : 'B is winner, 游戏结束！');
-						show();
+						return;
+					}
+					console.log(arr)
+			};
+			function userMove(item,i,j){
+				if(arr[j][i] === 0){ 	
+					item.innerText = nowColor === 1 ? ARole : BRole;
+					arr[i][j] = nowColor;
+					if(checkWin(arr,nowColor)){
+						isOver = true;
+						alert(nowColor === 1 ? 'A is winner, 游戏结束！' : 'B is winner, 游戏结束！');
 						return;
 					}
 					if(checkPeace()){
 						alert('平局！');
-						show();
-						return;
+						return; 
 					}
 					nowColor = nowColor === 1 ? 2 : 1;
-
 					if(checkWillWin(arr,nowColor)){	
 						console.log(nowColor === 1 ? 'A 要赢了' : 'B 要赢了');
 					}
+					console.log(arr)
+					computerMove();
 				}
 			};
 			function checkWillWin(tempArr,color){
@@ -106,7 +112,7 @@
 			//最好选择
 			function bestChoice(tempArr,color){
 				let p;
-				if(p = checkWillWin(tempArr,color)){
+				if(p = checkWillWin(arr,nowColor)){
 					return {
 						point: p,
 						result: 1
@@ -116,12 +122,12 @@
 				let point = null;
 				for(let i=0; i<3; i++){
 					for(let j=0; j<3; j++){
-						if(tempArr[i][j])
+						if(arr[i][j])
 							continue;
 						let temp = JSON.parse(JSON.stringify(tempArr));
 						temp[i][j] = color;
-						let r = bestChoice(temp, color === 1 ? 2 : 1).result;
-						if(-r > result){
+						let r = bestChoice(temp, nowColor === 1 ? 2 : 1).result;
+						if(-r > result){	
 							result = -r;
 							point = [j,i];
 						}
@@ -194,7 +200,6 @@
 			}
 
 		show();
-		bestChoice(arr,nowColor);
 	</script>
 </body>
 </html>
