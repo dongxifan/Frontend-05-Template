@@ -1,0 +1,138 @@
+<!DOCTYPE HTML>
+<htmL>
+<head>
+	<title>地图编辑器</title>
+	<style>
+		#container{
+			width: 600px;
+			height: 600px;
+			border: 1px solid grey;
+			margin: 0 auto;
+		}
+		.item{
+			float: left;
+			width: 6px;
+			height: 6px;
+			box-sizing: border-box;
+			background: white;
+			border: 1px solid grey;
+		}
+		.whiteBG{
+			background-color: white;
+		}
+		.blackBG{
+			background-color: grey;
+		}
+	</style>
+</head>
+<body>
+	<div id="container"></div>
+
+	<button type="button" style="margin-top: 10px;" onclick="saveData()">保存</button>
+
+	<script>
+		let map = localStorage.getItem('map') ? JSON.parse(localStorage.getItem('map')) : new Array(10000).fill(0);
+		let container = document.getElementById('container');
+		let mousedown = false;
+		let leftPoint = false;
+		for(let i=0; i<100; i++){
+			for(let j=0; j<100; j++){
+				let item = document.createElement('div');
+				item.classList.add("item");
+				if(map[100 * i + j] === 1){
+					selected(item);	
+				}else{
+					unSelected(item);
+				}
+				item.addEventListener('mouseover',function(e){			
+					if(mousedown){
+						//左键绘图，右键清除
+						if(leftPoint){
+							selected(item);	
+							map[100 * i + j] = 1;
+						}else{
+							unSelected(item);
+							map[100 * i + j] = 0;
+
+						}
+					}
+				})
+				container.appendChild(item);
+			}
+		}
+		
+		document.addEventListener('mousedown',function(e){
+			mousedown = true;
+			leftPoint = (e.which === 1);
+		});
+		document.addEventListener('mouseup',function(){
+			mousedown = false;
+		})
+		
+		document.addEventListener('contextmenu',function(e){
+			e.preventDefault();
+		})
+
+		function saveData(){
+			localStorage.setItem('map',JSON.stringify(map));
+		}
+		function unSelected(item){
+			item.classList.remove("blackBG")
+			item.classList.add("whiteBG")		
+		}
+		function selected(item){
+			item.classList.remove("whiteBG")	
+			item.classList.add("blackBG")	
+		}
+
+
+		///寻路  广度优先搜索   队列  左进右出   shift()  -- push()
+		async function path(map,start,end){
+
+			let queue = [start];
+
+			async function insert(x , y){
+				if(x < 0 || x >= 100 || y < 0 || y >= 100)
+					return ;
+
+				if(map[y * 100 + x])
+					return ;
+				await sleep(1);
+				container.children[y * 100 + x].style.backgroundColor = 'green';
+				map[y * 100 + x] = 2;
+				queue.push([x,y]);
+			}
+
+			while(queue.length){
+				let [x,y] = queue.shift();
+				// console.log(x,y)
+				if(Object.is(x,end[0]) && Object.is(y,end[1])){//如果找到最终的点
+					console.log('终点已找到。。。')
+					return true;
+				}
+
+				//如果没找到 就把当前点的上下左右 且符合条件的点放进队列里 等待判断
+				await insert(x , y+1);
+				await insert(x , y-1);
+				await insert(x+1 , y);
+				await insert(x-1 , y);
+				
+			}
+
+			
+		}
+
+
+
+		//异步执行
+		function sleep(t){
+			return new Promise(function(resolve){
+				setTimeout(resolve, t );
+			})
+		}
+
+
+
+	</script>
+</body>
+</html>
