@@ -87,20 +87,19 @@
 
 
 		///寻路  广度优先搜索   队列  左进右出   shift()  -- push()
-		async function path(map,start,end){
-
+		async function findPath(map,start,end){
+			let table = Object.create(map);
 			let queue = [start];
 
-			async function insert(x , y){
-				if(x < 0 || x >= 100 || y < 0 || y >= 100)
+			function insert(newX , newY , pre){
+				if(newX < 0 || newX >= 100 || newY < 0 || newY >= 100)
 					return ;
 
-				if(map[y * 100 + x])
+				if(map[newY * 100 + newX])
 					return ;
-				await sleep(1);
-				container.children[y * 100 + x].style.backgroundColor = 'green';
-				map[y * 100 + x] = 2;
-				queue.push([x,y]);
+				container.children[newY * 100 + newX].style.backgroundColor = 'green';
+				map[newY * 100 + newX] = pre;
+				queue.push([newX,newY]);
 			}
 
 			while(queue.length){
@@ -108,14 +107,31 @@
 				// console.log(x,y)
 				if(Object.is(x,end[0]) && Object.is(y,end[1])){//如果找到最终的点
 					console.log('终点已找到。。。')
-					return true;
+					let path = [];
+					while(x != start[0] || y != start[1]){
+
+						path.push(map[y * 100 + x]);
+						[x,y] = table[y * 100 + x];//核心  当前坐标获取到的值是上一个节点的坐标，同时x,y变成上一个坐标，上一个坐标再去找对应索引的值，周而复始
+						//根据一个坐标去拿一个值，这个值又是上一个坐标，循环下去就找到了整条路线；
+						console.log([x,y]);
+
+						container.children[y * 100 + x].style.backgroundColor = 'red';
+
+					}
+					return path;
 				}
 
 				//如果没找到 就把当前点的上下左右 且符合条件的点放进队列里 等待判断
-				await insert(x , y+1);
-				await insert(x , y-1);
-				await insert(x+1 , y);
-				await insert(x-1 , y);
+				await insert(x , y+1,[x,y]);
+				await insert(x , y-1,[x,y]);
+				await insert(x+1 , y,[x,y]);
+				await insert(x-1 , y,[x,y]);
+
+
+				await insert(x-1 , y-1,[x,y]);
+				await insert(x-1 , y+1,[x,y]);
+				await insert(x+1 , y-1,[x,y]);
+				await insert(x+1 , y+1,[x,y]);
 				
 			}
 
