@@ -1,0 +1,63 @@
+<div id='container' style="user-select: none;">
+文字文字文字文字文字文字文字文字文字文字文字文字文字文字文字文字文字文字
+文字文字文字文字文字文字文字文字文字文字文字文字文字文字文字文字文字文字
+文字文字文字文字文字文字文字文字文字文字文字文字文字文字文字文字文字文字
+文字文字文字文字文字文字文字文字文字文字文字文字文字文字文字文字文字文字
+文字文字文字文字文字文字文字文字文字文字文字文字文字文字文字文字文字文字</div>
+
+<div id="dragable" style="display: inline-block;width: 100px;height: 100px; background-color: pink"></div>
+<script>
+	let dragable = document.getElementById('dragable');
+	// let baseX = dragable.getBoundingClientRect().left, 
+	// 	baseY = dragable.getBoundingClientRect().top;
+	let baseX = 0, baseY = 0;
+	dragable.addEventListener('mousedown',function(event){
+		let startX = event.clientX;
+		let startY = event.clientY;
+		console.log(startX,startY)
+		let up = (event) => {
+			baseX = baseX + event.clientX -  startX;
+			baseY = baseY + event.clientY -  startY;
+			document.removeEventListener('mousemove',move);
+			document.removeEventListener('mouseup',up);
+		}
+
+		let move = (event) => {
+			// dragable.style.transform = `translate(${baseX + event.clientX - startX}px,${baseY + event.clientY - startY}px)`;
+			// console.log(((event.clientX - startX)) + ',' + (event.clientY - startY))
+			let range = getNearest(event.clientX , event.clientY);
+			range.insertNode(dragable);
+
+		}
+		document.addEventListener('mousemove',move);
+		document.addEventListener('mouseup',up);
+	})
+
+
+	let ranges = [];
+	let container = document.getElementById('container');
+	console.log(container.childNodes[0].textContent.length)
+	for(let i=0; i<container.childNodes[0].textContent.length; i++){
+		let range = document.createRange();
+		range.setStart(container.childNodes[0], i);
+		range.setEnd(container.childNodes[0] , i);
+		ranges.push(range);
+	}
+console.log(ranges)
+	function getNearest(x,y){
+		console.log('获取最近文本节点')
+		let min = Infinity;
+		let nearest = null;
+		for(let range of ranges){
+			let rect = range.getBoundingClientRect();
+			let distance = (rect.x - x) ** 2 + (rect.y - y) ** 2 ;
+			if(distance < min){
+				nearest = range;
+				min = distance;
+			}
+		}
+
+		return nearest;
+	}
+	document.addEventListener('selectstart', event => event.preventDefault)
+</script>
